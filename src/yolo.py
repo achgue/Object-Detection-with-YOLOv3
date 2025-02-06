@@ -1,26 +1,7 @@
-import os
-import wget
 import numpy as np
+import os
 import matplotlib.pyplot as plt
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from matplotlib.patches import Rectangle
-
-
-# Download function for local execution
-def download_file(url, filename):
-    if not os.path.exists(filename):
-        print(f"Downloading {filename}...")
-        wget.download(url, filename)
-    else:
-        print(f"{filename} already exists.")
-
-# Download YOLOv3 model weights
-yolo_model_url = "https://jeffpro.blob.core.windows.net/public/coco_yolo3.h5"
-model_filename = "coco_yolo3.h5"
-download_file(yolo_model_url, model_filename)
-
-
 
 class YOLO3:
   width = 416 # Width of input images for predictions
@@ -151,7 +132,7 @@ def decode_predictions(predictions, image_w, image_h, input_w=YOLO3.width, input
                 output.append(box)
     return output
 
-  # Draw bounding boxes on the image
+# Draw bounding boxes on the image
 def draw_boxes(filename, boxes, output_dir="output_images", figsize=(12, 8)):
   
     image = plt.imread(filename)
@@ -172,59 +153,3 @@ def draw_boxes(filename, boxes, output_dir="output_images", figsize=(12, 8)):
     plt.close(fig)  # Close the figure to free memory
     
     print(f"Saved: {output_path}")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Load the YOLO model
-model_filename = "coco_yolo3.h5"
-model = load_model(model_filename)
-print("Model loaded successfully.")
-
-
-# Ensure the 'images' folder exists
-image_folder = "input_images"
-os.makedirs(image_folder, exist_ok=True)
-
-
-
-
-# Iterate through images in the folder
-for i in range(1, 11):  # Images named from images_1.jpg to images_10.jpg
-    image_path = os.path.join(image_folder, f"image_{i}.jpg")
-
-    if not os.path.exists(image_path):
-        print(f"Skipping {image_path} (not found).")
-        continue  # Skip missing images
-
-    print(f"Processing {image_path}...")
-
-    # Preprocess image
-    #image = preprocess_image(image_path)
-    image = plt.imread(image_path)
-    width, height = image.shape[1], image.shape[0]
-    
-    x = load_img(image_path, target_size=(YOLO3.width, YOLO3.height))
-    x = img_to_array(x) / 255
-    x = np.expand_dims(x, axis=0)
-    y = model.predict(x)
-
-    # Decode predictions into bounding boxes (implement this function)
-    boxes = decode_predictions(y, width, height, min_score=0.55)
-
-    for box in boxes:
-      print(f'({box.xmin}, {box.ymin}), ({box.xmax}, {box.ymax}), {box.label}, {box.score}')
-
-    # Draw and display bounding boxes
-    draw_boxes(image_path, boxes)
